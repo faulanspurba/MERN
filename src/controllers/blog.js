@@ -15,8 +15,8 @@ exports.getAllData = (req, res, next) => {
 
 // GET POST BY ID
 exports.getDataById = (req, res, next) => {
-  const id = req.params.id;
-  Blogpost.findById(id)
+  const _id = req.params.id;
+  Blogpost.findById(_id)
     .then((result) => {
       if (!result) {
         console.log("Harusnya sih ini error");
@@ -33,7 +33,7 @@ exports.getDataById = (req, res, next) => {
 };
 
 // UPLOAD DATA TO DATABSE
-exports.post = (req, res, next) => {
+exports.uploadData = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const err = new Error("Invalid error data");
@@ -43,7 +43,7 @@ exports.post = (req, res, next) => {
   }
 
   if (!req.file) {
-    const err = new Error("Image must uploaded");
+    const err = new Error("Image must be uploaded");
     err.errorStatus = 422;
     throw err;
   }
@@ -69,4 +69,50 @@ exports.post = (req, res, next) => {
       next();
     })
     .catch((err) => console.log("Pesan Error:", err));
+};
+
+// UPDATE DATA TO DATABASE
+exports.updateDataById = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const err = new Error("Invalid error data");
+    err.errorStatus = 400;
+    err.data = errors.array();
+    throw err;
+  }
+
+  if (!req.file) {
+    const err = new Error("Image must uploaded");
+    err.errorStatus = 422;
+    throw err;
+  }
+
+  const { title, body } = req.body,
+    image = req.file.path,
+    _id = req.params.id;
+  console.log(_id);
+
+  // SAVING DATA TO MONGO DB
+  Blogpost.findById(_id)
+    .then((post) => {
+      console.log("Cmeweww");
+      if (!post) {
+        const err = new Error("Blog Post not found");
+        err.errorStatus = 404;
+        throw err;
+      }
+
+      post.title = title;
+      post.body = body;
+      post.image = image;
+
+      return post.save();
+    })
+    .then((result) => {
+      res.status(200).json({
+        message: "Update post success",
+        data: result,
+      });
+    })
+    .catch((err) => next(err));
 };
