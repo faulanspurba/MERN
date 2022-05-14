@@ -7,6 +7,7 @@ const {
   getAllData,
   getDataById,
   updateDataById,
+  deletePost,
 } = require("../controllers/blog");
 
 router.get("/posts", getAllData);
@@ -36,5 +37,7 @@ router.put(
   ],
   updateDataById
 );
+
+router.delete("/post/:id", deletePost);
 
 module.exports = router;
